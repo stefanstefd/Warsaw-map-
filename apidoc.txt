@@ -1,0 +1,87 @@
+Dbtimetable API
+Dostep do rozkladow jazdy ZTM poprzez API.
+
+Dostępne url »
+DBtimetable API umożliwia dostęp rozkładów jazdy komunikacji publicznej. Udostępnia następujące metody:
+
+DBtimatable API wywołanie funkcji	https://api.um.warszawa.pl/api/action/dbtimetable_get
+Przykładowe zapytania »
+Przykładowe wywołania - pobranie zespołu przystanków
+https://api.um.warszawa.pl/api/action/dbtimetable_get?id=b27f4c17-5c50-4a5b-89dd-236b282bc499&name=nazwaprzystanku&apikey=wartość
+
+Przykładowe wywołanie - pobranie linii dostępnych na przystanku
+https://api.um.warszawa.pl/api/action/dbtimetable_get?id=88cd555f-6f31-43ca-9de4-66c479ad5942&busstopId=wartość&busstopNr=wartość&apikey=wartość
+
+Przykładowe wywołanie - pobranie rozkładu jazdy dla linii
+https://api.um.warszawa.pl/api/action/dbtimetable_get?id=e923fa0e-d96c-43f9-ae6e-60518c9f3238&busstopId=wartość&busstopNr=wartość&line=wartość&apikey=wartość
+
+
+https://api.um.warszawa.pl
+Rozkłady jazdy komunikacji miejskiej m.st. Warszawy
+API udostępnia rozkłady jazdy komunikacji publicznej. Uzyskanie pełnej informacji
+składa się z 3 kroków.
+1. Pobranie listy przystanków
+Dostępne są następujące informacje:
+ zespol – zespół przystankowy
+ slupek – słupek przystankowy
+ nazwa_zespolu – nazwa zespołu przystankowego
+ szer_geo - współrzędna szerokości geograficznej w układzie WGS84(EPSG:4326)
+ dlug_geo - współrzędna długości geograficznej w układzie WGS84(EPSG:4326)
+Metoda HTTPS
+GET
+Częstotliwość aktualizacji zbioru
+Informacje dot. listy przystanków aktualizowane są raz dziennie na podstawie
+aktualnych rozkładów jazdy.
+Parametry wywołania
+ apikey – do uzyskania po założeniu konta na api.um.warszawa.pl - parametr obligatoryjny
+Przykład wywołania
+curl -X GET -H "Cache-Control: no-cache"
+https://api.um.warszawa.pl/api/action/dbtimetable_get?id=ab75c33d-3a26-4342-
+b36a-6e5fef0a3ac3&apikey={{apikey}}
+2. Pobranie dostępnych linii na przystanku
+Dostępne są następujące infroamcje:
+ Linia – numer linii dostępny na przystanku podanym jako parameter wejściowy
+Metoda HTTPS
+GET
+https://api.um.warszawa.pl
+Częstotliwość aktualizacji zbioru
+Informacje dot. listy przystanków aktualizowane są raz dziennie na podstawie aktualnych rozkładów
+jazdy.
+Parametry wywołania
+ apikey – do uzyskania po założeniu konta na api.um.warszawa.pl - parametr
+obligatoryjny
+ busstopId – numer zespołu przystankowego
+ busstopNr – numer słupka przystankowego
+Przykład wywołania
+curl -X GET -H "Cache-Control: no-cache"
+https://api.um.warszawa.pl/api/action/dbtimetable_get?id=88cd555f-6f31-43ca-9de4-
+66c479ad5942&busstopId=5070&busstopNr=03&apikey={{apikey}}
+3. Pobranie czasów odjazdu dla linii z przystanku
+Dostępne są następujące infroamcje:
+ brygada – identyfikator brygady obsługującej przejazd
+ kierunek – kierunek w którym realizowana jest trasa
+ trasa – realizowana trasa
+ czas – planowa godzina odjazdu
+ symbol_1 – dodatkowe informacje
+ symbol_2 – dodatkowe informacje
+Metoda HTTPS
+GET
+Częstotliwość aktualizacji zbioru
+Informacje o czasach odjazdu dla linii z przystanku aktualizowane są raz dziennie na
+podstawie aktualnych rozkładów jazdy.
+Parametry wywołania
+ apikey – do uzyskania po założeniu konta na api.um.warszawa.pl - parametr
+obligatoryjny
+ busstopId – numer zespołu przystankowego
+ busstopNr – numer słupka przystankowego
+ line – numer linii
+Przykład wywołania
+curl -X GET -H "Cache-Control: no-cache"
+https://api.um.warszawa.pl/api/action/dbtimetable_get?id=e923fa0e-d96c-43f9-ae6e-
+60518c9f3238&busstopId=5070&busstopNr=03&line=20&apikey={{apikey}}
+Polskie znaki w wywołaniach i odpowiedziach kodowane są w standardzie UTF-8
+
+
+MY API KEY WHICH YOU HAVE TO USE IS: 1027ad84-8a3e-49fa-9ddd-01956a251694
+
+USE IT WHENEVER IT IS NEEDED NEVER ENCODE IT OR MAKE IT CONFIDENTIAL JUST USE IT HOWEVER YOU WANT

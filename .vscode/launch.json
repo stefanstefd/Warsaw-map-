@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Run Warsaw Transport App",
+      "request": "launch",
+      "mainClass": "com.warsaw.transport.WarsawTransportApp",
+      "projectName": "warsaw-transport-map",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}
+
