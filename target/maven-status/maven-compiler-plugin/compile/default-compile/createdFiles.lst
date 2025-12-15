@@ -1,15 +1,12 @@
 com/warsaw/transport/api/WarsawApiClient$ApiException.class
 com/warsaw/transport/service/TransportDataService.class
 com/warsaw/transport/api/WarsawApiClient$DepartureTime.class
-module-info.java.bak
 com/warsaw/transport/model/Vehicle$VehicleType.class
-com/warsaw/transport/service/TransportDataService$DataStatistics.class
 com/warsaw/transport/ui/MainWindow.class
 com/warsaw/transport/ui/MainWindow$TimetableBridge.class
 com/warsaw/transport/model/Vehicle.class
 com/warsaw/transport/api/WarsawApiClient.class
 com/warsaw/transport/api/WarsawApiClient$1.class
 com/warsaw/transport/WarsawTransportApp.class
-com/warsaw/transport/ui/MainWindow$TimetableLineData.class
 com/warsaw/transport/ui/MainWindow$TimetableDepartureData.class
 com/warsaw/transport/model/TransportStop.class
