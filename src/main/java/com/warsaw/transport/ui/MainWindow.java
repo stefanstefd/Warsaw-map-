@@ -279,8 +279,13 @@ public class MainWindow {
     private void startStopsMode() {
         isRealTimeMode = false;
         isStopsMode = true;
-        
+
         logger.info("Starting stops mode");
+
+        if (scheduler == null || scheduler.isShutdown()) {
+            scheduler = Executors.newScheduledThreadPool(2);
+            logger.info("Recreated scheduler for stops mode");
+        }
         
         // Show stops controls
         HBox stopsControls = new HBox(10);
@@ -1360,9 +1365,16 @@ public class MainWindow {
             }
 
             // Run in background thread to avoid blocking UI
-            if (scheduler != null && !scheduler.isShutdown()) {
+            ScheduledExecutorService executor = scheduler;
+            if (executor == null || executor.isShutdown()) {
+                executor = Executors.newScheduledThreadPool(1);
+                scheduler = executor;
+                logger.info("Scheduler was not available; created a new one for timetable requests");
+            }
+
+            if (executor != null && !executor.isShutdown()) {
                 logger.info("Scheduler is available, submitting timetable request");
-                scheduler.submit(() -> {
+                executor.submit(() -> {
                     try {
                         List<String> lines = dataService.getLinesForStop(stopGroupId, stopId);
                         logger.info("Found {} lines for stop {}/{}", lines.size(), stopGroupId, stopId);
@@ -1411,8 +1423,15 @@ public class MainWindow {
                 return;
             }
 
-            if (scheduler != null && !scheduler.isShutdown()) {
-                scheduler.submit(() -> {
+            ScheduledExecutorService executor = scheduler;
+            if (executor == null || executor.isShutdown()) {
+                executor = Executors.newScheduledThreadPool(1);
+                scheduler = executor;
+                logger.info("Scheduler was not available; created a new one for departure requests");
+            }
+
+            if (executor != null && !executor.isShutdown()) {
+                executor.submit(() -> {
                     try {
                         List<WarsawApiClient.DepartureTime> departures = dataService.getDepartureTimes(stopGroupId, stopId, line);
                         List<TimetableDepartureData> departurePayload = new ArrayList<>();

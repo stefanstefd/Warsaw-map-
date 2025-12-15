@@ -40,39 +40,48 @@ public class TransportStop {
     public String getStopGroupId() {
         return stopGroupId;
     }
-    
+
+    @JsonProperty("zespol")
     public void setStopGroupId(String stopGroupId) {
         this.stopGroupId = stopGroupId;
     }
-    
+
+    @JsonProperty("slupek")
     public String getStopId() {
         return stopId;
     }
-    
+
+    @JsonProperty("slupek")
     public void setStopId(String stopId) {
         this.stopId = stopId;
     }
-    
+
+    @JsonProperty("nazwa_zespolu")
     public String getStopGroupName() {
         return stopGroupName;
     }
-    
+
+    @JsonProperty("nazwa_zespolu")
     public void setStopGroupName(String stopGroupName) {
         this.stopGroupName = stopGroupName;
     }
-    
+
+    @JsonProperty("szer_geo")
     public double getLatitude() {
         return latitude;
     }
-    
+
+    @JsonProperty("szer_geo")
     public void setLatitude(double latitude) {
         this.latitude = latitude;
     }
-    
+
+    @JsonProperty("dlug_geo")
     public double getLongitude() {
         return longitude;
     }
-    
+
+    @JsonProperty("dlug_geo")
     public void setLongitude(double longitude) {
         this.longitude = longitude;
     }
