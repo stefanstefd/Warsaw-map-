@@ -1,0 +1,10 @@
+# Build outputs
+/target/
+
+# Local tooling archives and unpacked distributions
+/apache-maven-*/
+*.tar.gz
+
+# OS-specific cruft
+.DS_Store
+*/.DS_Store
