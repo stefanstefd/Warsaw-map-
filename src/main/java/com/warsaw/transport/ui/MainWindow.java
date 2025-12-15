@@ -158,11 +158,11 @@ public class MainWindow {
         refreshButton.setOnAction(e -> {
             statusLabel.setText("Refreshing data...");
             refreshButton.setDisable(true);
-            
+
             if (scheduler != null && !scheduler.isShutdown()) {
                 scheduler.submit(() -> {
                     try {
-                        dataService.refreshAllData();
+                        dataService.refreshVehiclePositions();
                         Platform.runLater(() -> {
                             updateMapDisplay();
                             statusLabel.setText("Data refreshed successfully");
@@ -179,7 +179,7 @@ public class MainWindow {
             } else {
                 // If scheduler is not available, refresh directly
                 try {
-                    dataService.refreshAllData();
+                    dataService.refreshVehiclePositions();
                     updateMapDisplay();
                     statusLabel.setText("Data refreshed successfully");
                     refreshButton.setDisable(false);
@@ -251,7 +251,7 @@ public class MainWindow {
         if (scheduler != null && !scheduler.isShutdown()) {
             scheduler.submit(() -> {
                 try {
-                    dataService.refreshAllData();
+                    dataService.refreshVehiclePositions();
                     Platform.runLater(() -> {
                         updateMapDisplay();
                         statusLabel.setText("Real-time data loaded");
@@ -266,7 +266,7 @@ public class MainWindow {
         } else {
             // If scheduler is not available, load directly
             try {
-                dataService.refreshAllData();
+                dataService.refreshVehiclePositions();
                 updateMapDisplay();
                 statusLabel.setText("Real-time data loaded");
             } catch (Exception ex) {
@@ -279,8 +279,13 @@ public class MainWindow {
     private void startStopsMode() {
         isRealTimeMode = false;
         isStopsMode = true;
-        
+
         logger.info("Starting stops mode");
+
+        if (scheduler == null || scheduler.isShutdown()) {
+            scheduler = Executors.newScheduledThreadPool(2);
+            logger.info("Recreated scheduler for stops mode");
+        }
         
         // Show stops controls
         HBox stopsControls = new HBox(10);
@@ -562,13 +567,6 @@ public class MainWindow {
                     
                     var stopsLayer = L.layerGroup().addTo(map);
 
-                    var TIMETABLE_API = {
-                        BASE: 'https://api.um.warszawa.pl/api/action/dbtimetable_get/',
-                        KEY: '1027ad84-8a3e-49fa-9ddd-01956a251694',
-                        LINES_ID: '88cd555f-6f31-43ca-9de4-66c479ad5942',
-                        TIMES_ID: 'e923fa0e-d96c-43f9-ae6e-60518c9f3238'
-                    };
-
                     var stopLookup = [];
                     var stopMarkers = {};
                     var DEFAULT_STOP_NAME = 'Groszówka';
@@ -846,13 +844,7 @@ public class MainWindow {
                                         .openOn(map);
                                 } catch (e) { console.warn('Failed to open loading popup', e); }
                                 
-                                try {
-                                    showTimetable(stop.zespol, stop.slupek, stop.nazwa_zespolu);
-                                } catch (error) {
-                                    console.error('Error calling showTimetable:', error);
-                                    // Fallback: fetch directly from API via JS
-                                    try { fetchTimetable(stop.zespol, stop.slupek, stop.nazwa_zespolu); } catch (e2) { console.error('Fallback fetch failed', e2); }
-                                }
+                                showTimetable(stop.zespol, stop.slupek, stop.nazwa_zespolu);
                                 
                                 // Reset marker after 1 second
                                 setTimeout(function() {
@@ -888,7 +880,6 @@ public class MainWindow {
                                     departuresByLine: {},
                                     showAll: false,
                                     pendingLine: null,
-                                    fallbackMode: false,
                                     departureCallback: null
                                 };
 
@@ -898,14 +889,6 @@ public class MainWindow {
                                 loadingDiv.innerHTML = 'Loading timetable for<br><strong>' + stopName + '</strong><br>Please wait...';
                                 document.body.appendChild(loadingDiv);
 
-                                if (window.timetableFallbackTimer) {
-                                    clearTimeout(window.timetableFallbackTimer);
-                                }
-                                window.timetableFallbackTimer = setTimeout(function(){
-                                    console.warn('Timetable bridge timeout; using direct fetch');
-                                    fetchTimetable(stopGroupId, stopId, stopName);
-                                }, 2500);
-                                
                                 // Call Java method to get timetable data
                                 try {
                                     if (typeof bridge !== 'undefined' && bridge && typeof bridge.getTimetableData === 'function') {
@@ -915,22 +898,12 @@ public class MainWindow {
                                         console.warn('bridge detected without function type; attempting call anyway.');
                                         bridge.getTimetableData(stopGroupId, stopId, stopName);
                                     } else {
-                                        console.warn('bridge not available; switching to direct fetch.');
-                                        window.timetableState.fallbackMode = true;
-                                        if (window.timetableFallbackTimer) {
-                                            clearTimeout(window.timetableFallbackTimer);
-                                            window.timetableFallbackTimer = null;
-                                        }
-                                        fetchTimetable(stopGroupId, stopId, stopName);
+                                        console.warn('bridge not available; showing empty timetable.');
+                                        window.displayTimetable(stopName, { lines: [] });
                                     }
                                 } catch (err) {
                                     console.error('Error invoking bridge.getTimetableData:', err);
-                                    if (window.timetableFallbackTimer) {
-                                        clearTimeout(window.timetableFallbackTimer);
-                                        window.timetableFallbackTimer = null;
-                                    }
-                                    window.timetableState.fallbackMode = true;
-                                    fetchTimetable(stopGroupId, stopId, stopName);
+                                    window.displayTimetable(stopName, { lines: [] });
                                 }
                             };
 
@@ -954,11 +927,6 @@ public class MainWindow {
                         
                         var loadingDiv = document.querySelector('.loading-indicator');
                         if (loadingDiv) { document.body.removeChild(loadingDiv); }
-
-                        if (window.timetableFallbackTimer) {
-                            clearTimeout(window.timetableFallbackTimer);
-                            window.timetableFallbackTimer = null;
-                        }
 
                         var payload = timetableData || {};
                         var lines = [];
@@ -1206,17 +1174,22 @@ public class MainWindow {
 
                         window.timetableState.pendingLine = line;
 
-                        if (!window.timetableState.fallbackMode && typeof bridge !== 'undefined' && bridge && typeof bridge.getLineDepartures === 'function') {
+                        if (typeof bridge !== 'undefined' && bridge && typeof bridge.getLineDepartures === 'function') {
                             try {
                                 bridge.getLineDepartures(window.timetableState.stopGroupId, window.timetableState.stopId, line);
                             } catch (err) {
                                 console.error('Error invoking bridge.getLineDepartures:', err);
-                                window.timetableState.fallbackMode = true;
-                                fetchDeparturesFallback(line);
+                                window.displayLineDepartures(line, []);
+                            }
+                        } else if (bridge && bridge.getLineDepartures) {
+                            try {
+                                bridge.getLineDepartures(window.timetableState.stopGroupId, window.timetableState.stopId, line);
+                            } catch (err2) {
+                                console.error('Bridge call failed; showing empty departures.', err2);
+                                window.displayLineDepartures(line, []);
                             }
                         } else {
-                            window.timetableState.fallbackMode = true;
-                            fetchDeparturesFallback(line);
+                            window.displayLineDepartures(line, []);
                         }
 
                         window.timetableState.departureCallback = onComplete;
@@ -1255,96 +1228,6 @@ public class MainWindow {
                         return (hours * 60) + minutes;
                     }
 
-                    // Helper: fetch JSON
-                    function fetchJson(url) {
-                        return fetch(url, {cache: 'no-cache'}).then(function(res){ return res.json(); });
-                    }
-
-                    // Fallback: fetch lines directly from API
-                    function fetchTimetable(stopGroupId, stopId, stopName) {
-                        try {
-                            var linesUrl = TIMETABLE_API.BASE + '?id=' + encodeURIComponent(TIMETABLE_API.LINES_ID) + '&busstopId=' + encodeURIComponent(stopGroupId) + '&busstopNr=' + encodeURIComponent(stopId) + '&apikey=' + encodeURIComponent(TIMETABLE_API.KEY);
-                            fetchJson(linesUrl)
-                                .then(function(json){
-                                    var result = json && json.result ? json.result : [];
-                                    var lines = [];
-                                    result.forEach(function(entry){
-                                        if (entry && Array.isArray(entry.values)) {
-                                            entry.values.forEach(function(v){ if (v.key === 'linia') { lines.push(v.value); } });
-                                        } else if (Array.isArray(entry)) {
-                                            entry.forEach(function(v){ if (v && v.key === 'linia') { lines.push(v.value); } });
-                                        }
-                                    });
-                                    lines = lines.map(function(line){ return (line || '').trim(); }).filter(function(line){ return line.length > 0; });
-                                    lines = lines.slice(0, 15);
-                                    if (lines.length === 0) {
-                                        window.displayTimetable(stopName, { lines: [] });
-                                        return;
-                                    }
-                                    window.timetableState.fallbackMode = true;
-                                    window.displayTimetable(stopName, { lines: lines });
-                                })
-                                .catch(function(err){
-                                    console.error('Error fetching lines', err);
-                                    window.displayTimetable(stopName, { lines: [] });
-                                });
-                        } catch (e) {
-                            console.error('fetchTimetable failed', e);
-                            window.displayTimetable(stopName, { lines: [] });
-                        }
-                    }
-
-                    function fetchDeparturesFallback(line) {
-                        if (!line) {
-                            window.displayLineDepartures(line, []);
-                            return;
-                        }
-
-                        var state = window.timetableState || {};
-                        if (!state.stopGroupId || !state.stopId) {
-                            window.displayLineDepartures(line, []);
-                            return;
-                        }
-
-                        var timesUrl = TIMETABLE_API.BASE + '?id=' + encodeURIComponent(TIMETABLE_API.TIMES_ID) + '&busstopId=' + encodeURIComponent(state.stopGroupId) + '&busstopNr=' + encodeURIComponent(state.stopId) + '&line=' + encodeURIComponent(line) + '&apikey=' + encodeURIComponent(TIMETABLE_API.KEY);
-
-                        fetchJson(timesUrl)
-                            .then(function(tjson){
-                                var tres = tjson && tjson.result ? tjson.result : [];
-                                var departures = [];
-                                tres.forEach(function(entry){
-                                    var valuesArray = [];
-                                    if (entry && Array.isArray(entry.values)) {
-                                        valuesArray = entry.values;
-                                    } else if (Array.isArray(entry)) {
-                                        valuesArray = entry;
-                                    }
-
-                                    if (valuesArray.length > 0) {
-                                        var dep = {};
-                                        valuesArray.forEach(function(v){ if (v && v.key) { dep[v.key] = v.value; } });
-                                        if (dep['czas']) {
-                                            departures.push({
-                                                time: dep['czas'],
-                                                direction: dep['kierunek'] || '',
-                                                brigade: dep['brygada'] || ''
-                                            });
-                                        }
-                                    }
-                                });
-                                departures.sort(function(a, b){
-                                    if (!a.time && !b.time) { return 0; }
-                                    if (!a.time) { return 1; }
-                                    if (!b.time) { return -1; }
-                                    return a.time.localeCompare(b.time);
-                                });
-                                window.displayLineDepartures(line, departures);
-                            })
-                            .catch(function(err){
-                                console.error('Error fetching departures for line', line, err);
-                                window.displayLineDepartures(line, []);
-                            });
-                    }
                 </script>
             </body>
             </html>
@@ -1426,7 +1309,7 @@ public class MainWindow {
         
         scheduler.scheduleAtFixedRate(() -> {
             try {
-                dataService.refreshAllData();
+                dataService.refreshVehiclePositions();
                 Platform.runLater(this::updateMapDisplay);
             } catch (Exception e) {
                 logger.error("Failed to refresh data", e);
@@ -1482,9 +1365,16 @@ public class MainWindow {
             }
 
             // Run in background thread to avoid blocking UI
-            if (scheduler != null && !scheduler.isShutdown()) {
+            ScheduledExecutorService executor = scheduler;
+            if (executor == null || executor.isShutdown()) {
+                executor = Executors.newScheduledThreadPool(1);
+                scheduler = executor;
+                logger.info("Scheduler was not available; created a new one for timetable requests");
+            }
+
+            if (executor != null && !executor.isShutdown()) {
                 logger.info("Scheduler is available, submitting timetable request");
-                scheduler.submit(() -> {
+                executor.submit(() -> {
                     try {
                         List<String> lines = dataService.getLinesForStop(stopGroupId, stopId);
                         logger.info("Found {} lines for stop {}/{}", lines.size(), stopGroupId, stopId);
@@ -1533,8 +1423,15 @@ public class MainWindow {
                 return;
             }
 
-            if (scheduler != null && !scheduler.isShutdown()) {
-                scheduler.submit(() -> {
+            ScheduledExecutorService executor = scheduler;
+            if (executor == null || executor.isShutdown()) {
+                executor = Executors.newScheduledThreadPool(1);
+                scheduler = executor;
+                logger.info("Scheduler was not available; created a new one for departure requests");
+            }
+
+            if (executor != null && !executor.isShutdown()) {
+                executor.submit(() -> {
                     try {
                         List<WarsawApiClient.DepartureTime> departures = dataService.getDepartureTimes(stopGroupId, stopId, line);
                         List<TimetableDepartureData> departurePayload = new ArrayList<>();

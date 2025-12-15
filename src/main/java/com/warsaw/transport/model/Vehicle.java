@@ -3,8 +3,6 @@ package com.warsaw.transport.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.time.LocalDateTime;
-
 /**
  * Represents a public transport vehicle (bus, tram, etc.) in Warsaw
  */
@@ -28,11 +26,8 @@ public class Vehicle {
     
     @JsonProperty("Brigade")
     private String brigade;
-    
+
     private VehicleType type;
-    private LocalDateTime lastUpdate;
-    private double speed;
-    private String direction;
     
     public enum VehicleType {
         BUS, TRAM, METRO
@@ -47,7 +42,6 @@ public class Vehicle {
         this.longitude = longitude;
         this.latitude = latitude;
         this.type = type;
-        this.lastUpdate = LocalDateTime.now();
     }
     
     // Getters and Setters
@@ -105,30 +99,6 @@ public class Vehicle {
     
     public void setType(VehicleType type) {
         this.type = type;
-    }
-    
-    public LocalDateTime getLastUpdate() {
-        return lastUpdate;
-    }
-    
-    public void setLastUpdate(LocalDateTime lastUpdate) {
-        this.lastUpdate = lastUpdate;
-    }
-    
-    public double getSpeed() {
-        return speed;
-    }
-    
-    public void setSpeed(double speed) {
-        this.speed = speed;
-    }
-    
-    public String getDirection() {
-        return direction;
-    }
-    
-    public void setDirection(String direction) {
-        this.direction = direction;
     }
     
     @Override

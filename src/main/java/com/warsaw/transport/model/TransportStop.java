@@ -3,9 +3,6 @@ package com.warsaw.transport.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.List;
-import java.util.ArrayList;
-
 /**
  * Represents a public transport stop in Warsaw
  */
@@ -23,23 +20,15 @@ public class TransportStop {
     
     @JsonProperty("szer_geo")
     private double latitude;
-    
+
     @JsonProperty("dlug_geo")
     private double longitude;
-    
-    private List<String> lines;
-    private String district;
-    private boolean isActive;
-    
+
     // Default constructor for JSON deserialization
-    public TransportStop() {
-        this.lines = new ArrayList<>();
-        this.isActive = true;
-    }
+    public TransportStop() { }
     
     public TransportStop(String stopId, String stopGroupId, String stopGroupName, 
                         double latitude, double longitude) {
-        this();
         this.stopId = stopId;
         this.stopGroupId = stopGroupId;
         this.stopGroupName = stopGroupName;
@@ -51,96 +40,56 @@ public class TransportStop {
     public String getStopGroupId() {
         return stopGroupId;
     }
-    
+
+    @JsonProperty("zespol")
     public void setStopGroupId(String stopGroupId) {
         this.stopGroupId = stopGroupId;
     }
-    
+
+    @JsonProperty("slupek")
     public String getStopId() {
         return stopId;
     }
-    
+
+    @JsonProperty("slupek")
     public void setStopId(String stopId) {
         this.stopId = stopId;
     }
-    
+
+    @JsonProperty("nazwa_zespolu")
     public String getStopGroupName() {
         return stopGroupName;
     }
-    
+
+    @JsonProperty("nazwa_zespolu")
     public void setStopGroupName(String stopGroupName) {
         this.stopGroupName = stopGroupName;
     }
-    
+
+    @JsonProperty("szer_geo")
     public double getLatitude() {
         return latitude;
     }
-    
+
+    @JsonProperty("szer_geo")
     public void setLatitude(double latitude) {
         this.latitude = latitude;
     }
-    
+
+    @JsonProperty("dlug_geo")
     public double getLongitude() {
         return longitude;
     }
-    
+
+    @JsonProperty("dlug_geo")
     public void setLongitude(double longitude) {
         this.longitude = longitude;
     }
     
-    public List<String> getLines() {
-        return lines;
-    }
-    
-    public void setLines(List<String> lines) {
-        this.lines = lines != null ? lines : new ArrayList<>();
-    }
-    
-    public void addLine(String line) {
-        if (line != null && !this.lines.contains(line)) {
-            this.lines.add(line);
-        }
-    }
-    
-    public String getDistrict() {
-        return district;
-    }
-    
-    public void setDistrict(String district) {
-        this.district = district;
-    }
-    
-    public boolean isActive() {
-        return isActive;
-    }
-    
-    public void setActive(boolean active) {
-        isActive = active;
-    }
-    
-    /**
-     * Calculate distance to another stop in kilometers using Haversine formula
-     */
-    public double distanceTo(TransportStop other) {
-        if (other == null) return Double.MAX_VALUE;
-        
-        double lat1Rad = Math.toRadians(this.latitude);
-        double lat2Rad = Math.toRadians(other.latitude);
-        double deltaLatRad = Math.toRadians(other.latitude - this.latitude);
-        double deltaLonRad = Math.toRadians(other.longitude - this.longitude);
-        
-        double a = Math.sin(deltaLatRad / 2) * Math.sin(deltaLatRad / 2) +
-                   Math.cos(lat1Rad) * Math.cos(lat2Rad) *
-                   Math.sin(deltaLonRad / 2) * Math.sin(deltaLonRad / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        
-        return 6371.0 * c; // Earth's radius in kilometers
-    }
-    
     @Override
     public String toString() {
-        return String.format("TransportStop{id='%s', name='%s', lat=%.6f, lon=%.6f, lines=%s}", 
-                           stopId, stopGroupName, latitude, longitude, lines);
+        return String.format("TransportStop{id='%s', name='%s', lat=%.6f, lon=%.6f}",
+                           stopId, stopGroupName, latitude, longitude);
     }
     
     @Override

@@ -1,6 +1,6 @@
-/Users/stefan/CSIA/src/main/java/com/warsaw/transport/ui/MainWindow.java
-/Users/stefan/CSIA/src/main/java/com/warsaw/transport/api/WarsawApiClient.java
-/Users/stefan/CSIA/src/main/java/com/warsaw/transport/model/TransportStop.java
-/Users/stefan/CSIA/src/main/java/com/warsaw/transport/model/Vehicle.java
-/Users/stefan/CSIA/src/main/java/com/warsaw/transport/WarsawTransportApp.java
-/Users/stefan/CSIA/src/main/java/com/warsaw/transport/service/TransportDataService.java
+/Users/stefan/Documents/GitHub/Warsaw-map-/src/main/java/com/warsaw/transport/ui/MainWindow.java
+/Users/stefan/Documents/GitHub/Warsaw-map-/src/main/java/com/warsaw/transport/service/TransportDataService.java
+/Users/stefan/Documents/GitHub/Warsaw-map-/src/main/java/com/warsaw/transport/api/WarsawApiClient.java
+/Users/stefan/Documents/GitHub/Warsaw-map-/src/main/java/com/warsaw/transport/WarsawTransportApp.java
+/Users/stefan/Documents/GitHub/Warsaw-map-/src/main/java/com/warsaw/transport/model/TransportStop.java
+/Users/stefan/Documents/GitHub/Warsaw-map-/src/main/java/com/warsaw/transport/model/Vehicle.java

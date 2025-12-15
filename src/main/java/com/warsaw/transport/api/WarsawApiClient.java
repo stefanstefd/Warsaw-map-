@@ -3,16 +3,15 @@ package com.warsaw.transport.api;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.warsaw.transport.model.Vehicle;
 import com.warsaw.transport.model.TransportStop;
+import com.warsaw.transport.model.Vehicle;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
-
-import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +20,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Client for accessing Warsaw public transport API
@@ -35,9 +33,7 @@ public class WarsawApiClient {
     
     // Common parameters
     private static final String RESOURCE_ID_BUSES_1 = "f2e5503e-927d-4ad3-9500-4ab9e55deb59";
-    private static final String RESOURCE_ID_BUSES_2 = "36566e32-e31b-4b65-8e58-4cd6b2b8b33a";
     private static final String RESOURCE_ID_TRAMS = "13ce234d-3a8e-44ad-8c3c-6e77b3f99816";
-    private static final String RESOURCE_ID_STOPS = "29f2ea11-7a88-46fc-9ad6-b0e9c96b4b29";
     private static final String RESOURCE_ID_LINES = "88cd555f-6f31-43ca-9de4-66c479ad5942";
     private static final String RESOURCE_ID_TIMETABLE = "e923fa0e-d96c-43f9-ae6e-60518c9f3238";
     
@@ -64,20 +60,6 @@ public class WarsawApiClient {
     }
     
     /**
-     * Get real-time positions of all buses (async)
-     */
-    public CompletableFuture<List<Vehicle>> getBusPositionsAsync() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                return getBusPositions();
-            } catch (Exception e) {
-                logger.error("Failed to fetch bus positions asynchronously", e);
-                return new ArrayList<>();
-            }
-        });
-    }
-    
-    /**
      * Get real-time positions of all buses
      */
     public List<Vehicle> getBusPositions() throws IOException, ApiException, ParseException {
@@ -87,40 +69,12 @@ public class WarsawApiClient {
     }
     
     /**
-     * Get real-time positions of all trams (async)
-     */
-    public CompletableFuture<List<Vehicle>> getTramPositionsAsync() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                return getTramPositions();
-            } catch (Exception e) {
-                logger.error("Failed to fetch tram positions asynchronously", e);
-                return new ArrayList<>();
-            }
-        });
-    }
-    
-    /**
      * Get real-time positions of all trams
      */
     public List<Vehicle> getTramPositions() throws IOException, ApiException, ParseException {
-        List<Vehicle> trams = getVehiclePositions(RESOURCE_ID_BUSES_1, Vehicle.VehicleType.TRAM, 2);
+        List<Vehicle> trams = getVehiclePositions(RESOURCE_ID_TRAMS, Vehicle.VehicleType.TRAM, 2);
         logger.info("Retrieved {} tram positions", trams.size());
         return trams;
-    }
-    
-    /**
-     * Get all public transport stops (async)
-     */
-    public CompletableFuture<List<TransportStop>> getTransportStopsAsync() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                return getTransportStops();
-            } catch (Exception e) {
-                logger.error("Failed to fetch transport stops asynchronously", e);
-                return new ArrayList<>();
-            }
-        });
     }
     
     /**
